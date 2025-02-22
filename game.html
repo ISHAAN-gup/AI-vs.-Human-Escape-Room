@@ -1,0 +1,110 @@
+<!-- Game Page (game.html) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔢 AI vs Human: Escape Room</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background: linear-gradient(to right, #141e30, #243b55);
+            color: white;
+        }
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.3);
+        }
+        input {
+            width: 80%;
+            padding: 12px;
+            font-size: 18px;
+            text-align: center;
+            border-radius: 5px;
+            border: none;
+        }
+        button {
+            padding: 12px 25px;
+            font-size: 18px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        .submit-btn { background: limegreen; color: white; }
+        .home-btn { background: orange; color: white; }
+        .submit-btn:hover { background: darkgreen; }
+        .home-btn:hover { background: darkorange; }
+        .result, .progress { margin-top: 20px; font-size: 20px; }
+        .message { margin-top: 10px; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔢 AI vs Human</h1>
+        <p class="question" id="question">Loading...</p>
+        <input type="text" id="answer" placeholder="Your answer">
+        <button id="submitButton" class="submit-btn">Submit</button>
+        <button class="home-btn" onclick="goHome()">Home</button>
+        <p class="result" id="result"></p>
+        <p class="progress" id="progress">Level: 1 | Question: 1/9</p>
+        <p class="message" id="message"></p>
+    </div>
+
+    <script>
+        let progress = JSON.parse(localStorage.getItem("progress")) || { level: 1, currentQuestion: 1 };
+        let questionsPerLevel = 5 + Math.floor(Math.random() * 5);
+        let currentPuzzle; // Store the current puzzle
+
+        function generateQuestion() {
+            let num1 = Math.floor(Math.random() * progress.level * 10 + 1);
+            let num2 = Math.floor(Math.random() * progress.level * 10 + 1);
+            let operator = progress.level < 12 ? ['+', '-'][Math.floor(Math.random() * 2)] : '*';
+            let question = `${num1} ${operator} ${num2}`;
+            return { question, answer: eval(question).toString() };
+        }
+
+        function loadQuestion() {
+            currentPuzzle = generateQuestion(); // Generate a new question
+            document.getElementById("question").innerText = currentPuzzle.question;
+            document.getElementById("progress").innerText = `Level: ${progress.currentLevel} | Question: ${progress.currentQuestion}/${questionsPerLevel}`;
+            document.getElementById("message").innerText = ""; // Clear previous messages
+        }
+
+        function checkAnswer() {
+            let userAnswer = document.getElementById("answer").value.trim();
+            let messageElement = document.getElementById("message");
+            if (userAnswer === currentPuzzle.answer) {
+                messageElement.innerText = "Correct answer!";
+                progress.currentQuestion++;
+                if (progress.currentQuestion > questionsPerLevel) {
+                    progress.level++;
+                    progress.currentLevel = progress.level;
+                    progress.currentQuestion = 1;
+                    localStorage.setItem("progress", JSON.stringify(progress));
+                    alert("Level Up!");
+                }
+                loadQuestion(); // Load the next question
+            } else {
+                messageElement.innerText = "Wrong answer! Try again.";
+            }
+            localStorage.setItem("progress", JSON.stringify(progress));
+        }
+
+        function goHome() {
+            window.location.href = "index.html";
+        }
+
+        loadQuestion(); // Load the first question
+
+        document.getElementById('submitButton').addEventListener('click', function() {
+            checkAnswer();
+        });
+    </script>
+</body>
+</html> 
